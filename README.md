@@ -6,9 +6,9 @@ A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://git
 
 ## Software Architecture
 
-- **a. Programming Language:** Java (JDK 21)
-- **b. Framework:** libGDK (Java Game API)
-- **c. Operating System:** Cross-platform (Windows, Mac, Linux)
+- **Programming Language:** Java (JDK 21)
+- **Framework:** libGDK (Java Game API)
+- **Operating System:** Cross-platform (Windows, Mac, Linux)
 
 ## External Dependencies
 
@@ -19,6 +19,7 @@ The project uses the Stockfish engine for AI moves, which is integrated as an ex
 2. **Install IntelliJ IDEA or VSCode:**
    - Open the project in IntelliJ IDEA. The IDE will automatically recognize the Gradle configuration and resolve any dependencies.
    - If you use VSCode install the Java extension pack
+   - Use the gradle interface to build the project
 
 3. **Stockfish Path:**
    - Update the path to the Stockfish executable in the `ChessGame` class, ensuring that it points to the correct location on the user's system.
