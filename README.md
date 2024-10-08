@@ -2,7 +2,30 @@
 
 A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
 
-This project was generated with a template including simple application launchers and a main class extending `Game` that sets the first screen.
+## Proof Of Concept
+
+## 1. Software Architecture
+
+- **a. Programming Language:** Java (JDK 21)
+- **b. Framework:** libGDK (Java Game API)
+- **c. Operating System:** Cross-platform (Windows, Mac, Linux)
+
+## 2. External Dependencies
+
+The project uses the Stockfish engine for AI moves, which is integrated as an external executable. The path to the Stockfish binary is provided in the `ChessGame` class. Stockfish runs as a separate process, and the game communicates with it via input/output streams. In order to run this program you will need to have Stockfish installed on the local machine
+
+## 4. Instructions to Run:
+
+1. **Install IntelliJ IDEA or VSCode:**
+   - Open the project in IntelliJ IDEA. The IDE will automatically recognize the Gradle configuration and resolve any dependencies.
+   - If you use VSCode install the Java extension pack
+
+2. **Stockfish Path:**
+   - Update the path to the Stockfish executable in the `ChessGame` class, ensuring that it points to the correct location on the user's system.
+
+3. **Run the Project:**
+   - The class to run is `Lwjgl3Launcher.java` in `lwjgl3/src/main/java/org/chessGDK/lwjgl3` which can be executed by right-clicking on it in IntelliJ and selecting "Run". This will launch the chess game window and perform an initial demonstration of the game's functionality.
+
 
 ## Platforms
 
