@@ -1,32 +1,111 @@
 package org.chessGDK.ui;
 
-
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
+import org.chessGDK.logic.GameManager;
 import org.chessGDK.pieces.*;
+
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+
 
 /** First screen of the application. Displayed after the application is created. */
 public class ChessBoardScreen implements Screen {
     private final SpriteBatch batch;
-    private Texture whitePawnTexture, blackPawnTexture, boardTexture;
-    private static final int TILE_SIZE = 80;
-    private final Piece[][] board;
+    /*
+    private Texture whitePawnTexture, blackPawnTexture, whiteRookTexture, blackRookTexture,
+                    whiteKnightTexture, blackKnightTexture, whiteBishopTexture, blackBishopTexture,
+                    whiteQueenTexture, blackQueenTexture, whiteKingTexture, blackKingTexture;
 
-    public ChessBoardScreen(ChessScreenManager gameScreen) {
-        this.batch = gameScreen.batch;
-        this.board = gameScreen.gm.getBoard();
-        loadPieceTextures();
+     */
+    private Texture boardTexture;
+    private static final int TILE_SIZE = Gdx.graphics.getWidth()/8;
+    private Piece[][] board;
+    private GameManager gm;
+    private Stage stage;
+    private Skin skin;
+
+    // Variables for piece movement animation
+    private Vector2 startPosition, targetPosition, currentPosition;
+    private Piece animatedPiece;
+    private float elapsedTime = 0f;  // Time passed since animation started
+    private float totalTime = .2f;    // Total time to complete the animation (e.g., 2 seconds)
+    private final Array<PieceAnimation> activeAnimations = new Array<>();
+    private OrthographicCamera camera;
+
+    public ChessBoardScreen(GameManager gm) {
+        batch = new SpriteBatch();
+        this.gm = gm;
+        camera = new OrthographicCamera(); // Initialize the camera
+        camera.setToOrtho(false, 800, 800); // Set the viewport size
+        // Initialize the Stage and Skin
+        stage = new Stage(new ScreenViewport());
+        Gdx.input.setInputProcessor(stage); // Set the stage to handle input
+
+        skin = new Skin(Gdx.files.internal("uiskin.json")); // Load your skin file
+
     }
 
-    private void loadPieceTextures() {
-        boardTexture = new Texture("chessboard.png");  // Path to chessboard image
-        whitePawnTexture = new Texture("white_pawn.png");
-        blackPawnTexture = new Texture("black_pawn.png");
-        // Load all other piece textures (rook, knight, etc.)
+    public void addButtons(GameManager gm) {
+        // Create the button
+        TextButton aiTurnButton = new TextButton("Take your Turn", skin);
+        aiTurnButton.setPosition(10, 10); // Set position of the button
+        aiTurnButton.setSize(200, 50);    // Set size of the button
+        // Add a ClickListener to the button
+        aiTurnButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+
+                System.out.println("AI Turn Button Clicked");
+                // Call AI move logic here
+                boolean went = gm.aiTurn();
+                if (!went)
+                    System.out.println("aiTakeTurn(): " + went);
+            }
+        });
+
+        // Add the button to the stage
+        stage.addActor(aiTurnButton);
+    }
+
+    public void loadTextures(GameManager gm) {
+        boardTexture = new Texture("blue3.jpg");
+        this.gm = gm;
+        board = gm.getBoard();
+        for(int i = 0; i < board.length; i++) {
+            for(int j = 0; j < board[i].length; j++) {
+                Piece piece = board[i][j];
+                if (piece != null) {
+                    piece.setPosition(j*TILE_SIZE, i*TILE_SIZE);
+                }
+            }
+        }
+
+    }
+
+    private boolean applyTexture(Piece piece) {
+        if (piece == null)
+            return false;
+        String texturePath = "Chess_" +
+            piece.toString() +
+            (piece.isWhite() ? "l" : "d") +
+            "t100.png";
+        Texture texture = new Texture(texturePath);
+        piece.setTexture(texture);
+        return true;
     }
 
     @Override
@@ -39,18 +118,87 @@ public class ChessBoardScreen implements Screen {
         batch.begin();
         // Draw the chessboard (you can later add pieces and other elements)
         batch.draw(boardTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        /*
+        if (animatedPiece != null && animatedPiece.isAnimating())
+            animatePiece(delta);
+
+         */
+        updateAnimations(delta);
+        drawPieces();
+
+
         batch.end();
+
+        // Update and draw the stage (which contains the button)
+        stage.act(Gdx.graphics.getDeltaTime());
+        stage.draw();
+    }
+
+    // Method to start the animation
+    public void startPieceAnimation(Piece piece, int startX, int startY, int endX, int endY) {
+        animatedPiece = piece;
+        startPosition = new Vector2(startX * TILE_SIZE, startY * TILE_SIZE);
+        targetPosition = new Vector2(endX * TILE_SIZE, endY * TILE_SIZE);
+        activeAnimations.add(new PieceAnimation(piece, startPosition, targetPosition));
+    }
+
+    public void updateAnimations(float delta) {
+        for (PieceAnimation animation : activeAnimations) {
+            animation.update(delta);  // Delta is passed to ensure frame-rate independence
+
+            // Draw the animated piece
+            Texture pieceTexture = animation.piece.getTexture();
+            batch.draw(pieceTexture, animation.startPosition.x, animation.startPosition.y, TILE_SIZE, TILE_SIZE - 5);
+
+            if (animation.isDone()) {
+                animation.piece.toggleAnimating();
+                activeAnimations.removeValue(animation, true); // Remove the animation if done
+            }
+        }
+    }
+
+    private void animatePiece(float delta) {
+        // Increment elapsed time
+        elapsedTime += delta;
+
+        // Calculate the interpolation factor (progress) based on elapsed time over total time
+        float progress = Math.min(elapsedTime / totalTime, 1f);  // Ensure it doesn't exceed 1
+
+        // Linearly interpolate between the starting and target positions based on progress
+        currentPosition.set(startPosition).lerp(targetPosition, progress);
+
+        // If the progress reaches or exceeds 1, stop the animation
+        if (progress >= 1f) {
+            animatedPiece.toggleAnimating();  // Stop animation
+            elapsedTime = 0;
+
+            return;
+        }
+        // Draw the animated piece at the current interpolated position
+        Texture pieceTexture = animatedPiece.getTexture();
+        batch.draw(pieceTexture, currentPosition.x, currentPosition.y, TILE_SIZE, TILE_SIZE - 5);
+    }
+
+    private void drawPieces() {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                Piece piece = board[i][j];
+                if (piece == null || piece.isAnimating()) continue;
+                batch.draw(piece.getTexture(), piece.getXPos(), piece.getYPos(), TILE_SIZE, TILE_SIZE - 5);
+            }
+        }
     }
 
     @Override
     public void dispose() {
-        whitePawnTexture.dispose();
-        blackPawnTexture.dispose();
+
     }
 
     @Override
     public void show() {
-        // Prepare your screen here.
+        PieceInputHandler inputHandler = new PieceInputHandler(gm, camera, board, TILE_SIZE);
+        Gdx.input.setInputProcessor(inputHandler);
     }
 
     @Override

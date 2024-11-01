@@ -10,9 +10,11 @@ public class StockfishAI {
     private final Process stockfishProcess;
     private final BufferedReader inputReader;
     private final OutputStream outputStream;
+    private final int depth;
 
-    public StockfishAI(String stockfishPath) throws IOException {
+    public StockfishAI(String stockfishPath, int depth) throws IOException {
         ProcessBuilder processBuilder = new ProcessBuilder(stockfishPath);
+        this.depth = depth;
         stockfishProcess = processBuilder.start();
         inputReader = new BufferedReader(new InputStreamReader(stockfishProcess.getInputStream()));
         outputStream = stockfishProcess.getOutputStream();
@@ -21,7 +23,7 @@ public class StockfishAI {
         // Read and print Stockfish's response
         String line;
         while ((line = inputReader.readLine()) != null) {
-
+            System.out.println("Stockfish: " + line);
             if (line.equals("uciok")) {
                 System.out.println("Stockfish: " + line);
                 break;  // Stop reading when Stockfish signals that it is ready
@@ -50,13 +52,20 @@ public class StockfishAI {
         }
     }
 
+
+
     public String getBestMove(String fen) throws IOException {
         // Send the position in FEN format
-        outputStream.write(("position fen " + fen + "\n").getBytes());
+        String toSend = "position startpos\n";
+        if (!fen.isEmpty())
+            toSend = "position fen " + fen + "\n";
+
+        outputStream.write(toSend.getBytes());
         outputStream.flush();
 
         // Request the best move
-        outputStream.write("go depth 5\n".getBytes());
+        toSend = "go depth " + depth + "\n";
+        outputStream.write(toSend.getBytes());
         outputStream.flush();
 
         // Read the response until we find the best move
