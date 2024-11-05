@@ -1,6 +1,8 @@
 package org.chessGDK.pieces;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.files.FileHandle;
 
 public abstract class Piece {
     protected boolean isWhite;
@@ -12,7 +14,7 @@ public abstract class Piece {
     public Piece(boolean isWhite) {
         this.isWhite = isWhite;
         String texturePath = "Chess_" +
-            toString() +
+            toString().toLowerCase() +
             (isWhite() ? "l" : "d") +
             "t100.png";
         pieceTexture = new Texture(texturePath);

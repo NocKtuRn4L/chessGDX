@@ -62,8 +62,11 @@ jar {
   }
 // setting the manifest makes the JAR runnable.
   manifest {
-    attributes 'Main-Class': project.mainClassName
-  }
+    attributes (
+      'Main-Class': project.mainClassName,
+      'Root-Path': "${project.rootDir}" // Embeds the assets path
+      )
+    }
 // this last step may help on some OSes that need extra instruction to make runnable JARs.
   doLast {
     file(archiveFile).setExecutable(true, false)

@@ -1,10 +1,12 @@
 package org.chessGDK.ai;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.ProcessBuilder;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 
 public class StockfishAI {
     private final Process stockfishProcess;
@@ -12,8 +14,29 @@ public class StockfishAI {
     private final OutputStream outputStream;
     private final int depth;
 
-    public StockfishAI(String stockfishPath, int depth) throws IOException {
-        ProcessBuilder processBuilder = new ProcessBuilder(stockfishPath);
+    public StockfishAI(int depth) throws IOException {
+        String rootPath = System.getProperty("root.path");
+        System.out.println(rootPath);
+
+        if (rootPath == null) {
+            try {
+                // Locate and open the manifest file in the JAR
+                InputStream manifestStream = StockfishAI.class.getResourceAsStream("/META-INF/MANIFEST.MF");
+                if (manifestStream != null) {
+                    Manifest manifest = new Manifest(manifestStream);
+                    Attributes attributes = manifest.getMainAttributes();
+
+                    // Retrieve the "Asset-Path" property or any other property you defined
+                    rootPath = attributes.getValue("Root-Path");
+                    System.out.println("Root Path from Manifest: " + rootPath);
+                } else {
+                    System.err.println("Manifest not found in JAR.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        ProcessBuilder processBuilder = new ProcessBuilder(rootPath + "/assets/stockfish/stockfish-windows-x86-64-avx2.exe");
         this.depth = depth;
         stockfishProcess = processBuilder.start();
         inputReader = new BufferedReader(new InputStreamReader(stockfishProcess.getInputStream()));

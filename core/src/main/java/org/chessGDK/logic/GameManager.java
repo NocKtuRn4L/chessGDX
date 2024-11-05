@@ -3,6 +3,9 @@ package org.chessGDK.logic;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
+
 import org.chessGDK.pieces.*;
 import org.chessGDK.ai.StockfishAI;
 import org.chessGDK.ui.ChessBoardScreen;
@@ -16,22 +19,23 @@ public class GameManager extends ScreenAdapter {
     private final Piece[][] board;
     private final Piece[] castlingPieces;
     private final StockfishAI stockfishAI;
+    private final int DEPTH = 12;
     private int halfMoves;
     private String castlingRights;
     private String enPassantSquare;
     private ChessBoardScreen screen;
 
-    public GameManager(String stockfishPath, int depth, ChessBoardScreen cScreen) throws IOException {
+    public GameManager(ChessBoardScreen cScreen) throws IOException {
         board = new Piece[8][8];
         whiteTurn = true;
         castlingPieces = new Piece[6];
         setupPieces();
-        stockfishAI = new StockfishAI(stockfishPath, depth);
+        stockfishAI = new StockfishAI(DEPTH);
         printBoard();
         halfMoves = 0;
         castlingRights = "KQkq";
         enPassantSquare = null;
-        screen = cScreen;
+        //screen = cScreen;
     }
 
     private void setupPieces() {

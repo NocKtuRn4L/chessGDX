@@ -46,9 +46,8 @@ public class ChessBoardScreen implements Screen {
     private final Array<PieceAnimation> activeAnimations = new Array<>();
     private OrthographicCamera camera;
 
-    public ChessBoardScreen(GameManager gm) {
+    public ChessBoardScreen() {
         batch = new SpriteBatch();
-        this.gm = gm;
         camera = new OrthographicCamera(); // Initialize the camera
         camera.setToOrtho(false, 800, 800); // Set the viewport size
         // Initialize the Stage and Skin
@@ -103,7 +102,7 @@ public class ChessBoardScreen implements Screen {
             piece.toString() +
             (piece.isWhite() ? "l" : "d") +
             "t100.png";
-        Texture texture = new Texture(texturePath);
+        Texture texture = new Texture(Gdx.files.internal(texturePath));
         piece.setTexture(texture);
         return true;
     }

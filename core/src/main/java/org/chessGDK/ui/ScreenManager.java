@@ -11,17 +11,15 @@ public class ScreenManager extends Game {
     private GameManager gm;
     // Create references to different screens
     private ChessBoardScreen chessBoardScreen;
-    private final int depth = 15;
 
 
     @Override
     public void create() {
-
-        String stockfishPath = "../stockfish/stockfish-windows-x86-64-avx2.exe";
+        // print the current working directory
         // Initialize screens
         try {
-            chessBoardScreen = new ChessBoardScreen(gm);
-            gm = new GameManager(stockfishPath, depth, chessBoardScreen);
+            chessBoardScreen = new ChessBoardScreen();
+            gm = new GameManager(chessBoardScreen);
             chessBoardScreen.loadTextures(gm);
             chessBoardScreen.addButtons(gm);
 
