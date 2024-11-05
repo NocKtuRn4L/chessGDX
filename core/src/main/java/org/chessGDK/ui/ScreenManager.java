@@ -17,20 +17,7 @@ public class ScreenManager extends Game {
     public void create() {
         // print the current working directory
         // Initialize screens
-        try {
-            chessBoardScreen = new ChessBoardScreen();
-            gm = new GameManager(chessBoardScreen);
-            chessBoardScreen.loadTextures(gm);
-            chessBoardScreen.addButtons(gm);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        // Set the initial screen to the main menu
-        this.setScreen(chessBoardScreen);
-
-        //proofOfConcept();
+        playChess();
     }
 
     public void proofOfConcept() {
@@ -55,11 +42,28 @@ public class ScreenManager extends Game {
 
         boolean hasMoves = true;
         while (hasMoves) {
-                hasMoves = gm.aiTakeTurn();
+                hasMoves = gm.aiTurn();
         }
 
 
     }
+
+    // Add other methods to manage game state, screens, etc.    
+    public void playChess() {
+        try {
+            gm = new GameManager();
+            chessBoardScreen = new ChessBoardScreen(this);
+            chessBoardScreen.loadTextures(gm);
+            //chessBoardScreen.addButtons(gm);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Set the initial screen to the main menu
+        this.setScreen(chessBoardScreen);
+    }
+    
 
     @Override
     public void render() {

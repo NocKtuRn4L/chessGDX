@@ -35,6 +35,7 @@ public class ChessBoardScreen implements Screen {
     private static final int TILE_SIZE = Gdx.graphics.getWidth()/8;
     private Piece[][] board;
     private GameManager gm;
+    private ScreenManager sm;
     private Stage stage;
     private Skin skin;
 
@@ -46,14 +47,15 @@ public class ChessBoardScreen implements Screen {
     private final Array<PieceAnimation> activeAnimations = new Array<>();
     private OrthographicCamera camera;
 
-    public ChessBoardScreen() {
+    public ChessBoardScreen(ScreenManager sm) {
         batch = new SpriteBatch();
         camera = new OrthographicCamera(); // Initialize the camera
         camera.setToOrtho(false, 800, 800); // Set the viewport size
-        // Initialize the Stage and Skin
+        this.sm = sm;
+        
+        // Initialize the Stage and Skin for Buttons (not in use)
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage); // Set the stage to handle input
-
         skin = new Skin(Gdx.files.internal("uiskin.json")); // Load your skin file
 
     }
@@ -84,6 +86,7 @@ public class ChessBoardScreen implements Screen {
         boardTexture = new Texture("blue3.jpg");
         this.gm = gm;
         board = gm.getBoard();
+        // Pieces load textures when created, placing them displays them
         for(int i = 0; i < board.length; i++) {
             for(int j = 0; j < board[i].length; j++) {
                 Piece piece = board[i][j];

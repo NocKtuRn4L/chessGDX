@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Camera;
 import org.chessGDK.logic.GameManager;
 import org.chessGDK.pieces.Piece;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -34,19 +35,26 @@ public class PieceInputHandler extends InputAdapter {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        // Convert screen coordinates to world coordinates
-        Vector3 worldCoordinates = new Vector3(screenX, screenY, 0);
-        camera.unproject(worldCoordinates); // Convert to world coordinates
-        if (firstClick) {
-            liftPositon.set(worldCoordinates); // Store the first click position
-            handleLift(screenX, screenY);
-        } else {
-            dropPosition.set(worldCoordinates); // Store the second click position
-            handlePlace(screenX, screenY);
-            isDragging = false;
+            // Convert screen coordinates to world coordinates
+            if (button == Input.Buttons.LEFT) {
+                Vector3 worldCoordinates = new Vector3(screenX, screenY, 0);
+                camera.unproject(worldCoordinates); // Convert to world coordinates
+                if (firstClick) {
+                    liftPositon.set(worldCoordinates); // Store the first click position
+                    handleLift(screenX, screenY);
+                } else {
+                    dropPosition.set(worldCoordinates); // Store the second click position
+                    handlePlace(screenX, screenY);
+                    isDragging = false;
+                }
+                return true;
+            }
+            if (button == Input.Buttons.RIGHT && isDragging) {
+                cancelLift();
+                return true;
+            }
+            return false;
         }
-        return true;
-    }
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
@@ -64,8 +72,8 @@ public class PieceInputHandler extends InputAdapter {
         Vector3 worldCoordinates = new Vector3(screenX, screenY, 0);
         camera.unproject(worldCoordinates);
 
-        int liftX = (int) (worldCoordinates.x / TILE_SIZE);
-        int liftY = (int) (worldCoordinates.y / TILE_SIZE);
+        int liftX = coords.worldToBoardX(worldCoordinates.x);
+        int liftY = coords.worldToBoardY(worldCoordinates.y);
 
         // First click: Select a piece if there's one at this position
         selectedPiece = board[liftY][liftX];
@@ -83,12 +91,22 @@ public class PieceInputHandler extends InputAdapter {
         }
     }
 
+    private void cancelLift() {
+        selectedPiece.setPosition(coords.worldToBoardX(liftPositon.x) * TILE_SIZE,
+                                coords.worldToBoardY(liftPositon.y) * TILE_SIZE);
+        System.out.println("Move cancelled");
+        firstClick = true;
+        isDragging = false;
+        selectedPiece = null;
+    }
+
     // Method to handle placing the piece
     private void handlePlace(int screenX, int screenY) {
         Vector3 worldCoordinates = new Vector3(screenX, screenY, 0);
         camera.unproject(worldCoordinates);
-        int placeX = (int) (worldCoordinates.x / TILE_SIZE);
-        int placeY = (int) (worldCoordinates.y / TILE_SIZE);
+        int placeX = coords.worldToBoardX(worldCoordinates.x);
+        int placeY = coords.worldToBoardY(worldCoordinates.y);
+
         placeX += 'a';
         placeY += '1';
         String move = String.valueOf((char) startPos.x) +
@@ -99,12 +117,11 @@ public class PieceInputHandler extends InputAdapter {
             System.out.println("Placed piece at: " + (char) placeX + ", " + (char) placeY);
             placeX -= 'a';
             placeY -= '1';
-            selectedPiece.setPosition(placeX * TILE_SIZE, placeY * TILE_SIZE);
             isDragging = false;
         } else {
             startPos.x -= 'a';
             startPos.y -= '1';
-            selectedPiece.setPosition(startPos.x * TILE_SIZE, startPos.y * TILE_SIZE);
+            cancelLift();
         }
         firstClick = true; // Reset for the next turn
         selectedPiece = null;  // Reset selection

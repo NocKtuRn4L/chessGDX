@@ -23,9 +23,8 @@ public class GameManager extends ScreenAdapter {
     private int halfMoves;
     private String castlingRights;
     private String enPassantSquare;
-    private ChessBoardScreen screen;
 
-    public GameManager(ChessBoardScreen cScreen) throws IOException {
+    public GameManager() throws IOException {
         board = new Piece[8][8];
         whiteTurn = true;
         castlingPieces = new Piece[6];
@@ -35,7 +34,6 @@ public class GameManager extends ScreenAdapter {
         halfMoves = 0;
         castlingRights = "KQkq";
         enPassantSquare = null;
-        //screen = cScreen;
     }
 
     private void setupPieces() {
@@ -112,8 +110,13 @@ public class GameManager extends ScreenAdapter {
                 enPassantSquare = (char)('a' + endCol) + "" + temp ;
             }
             //piece.toggleAnimating();
+            printBoard();
             whiteTurn = !whiteTurn;
             halfMoves++;
+            piece.setPosition(endCol * Gdx.graphics.getWidth()/8, endRow * Gdx.graphics.getHeight()/8);
+            if (!whiteTurn) {
+                aiTurn();
+            }
             return true;
         }
         return false;
@@ -267,8 +270,8 @@ public class GameManager extends ScreenAdapter {
         }
         return true;
     }
+    
     public boolean aiTurn() {
-        String bestMove;
         String fen;
         fen = generateFen();
         Timer.schedule(new Timer.Task() {
@@ -283,11 +286,7 @@ public class GameManager extends ScreenAdapter {
 
                     boolean moved = movePiece(bestMove);
                     System.out.println("Move " + bestMove + ": " + moved);
-                    printBoard();
-
-                    // Update game state or UI
-                    System.out.println("Best move: " + bestMove);
-                    makeNextMove();
+                    //printBoard();
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -334,8 +333,6 @@ public class GameManager extends ScreenAdapter {
         super.render(delta);
 
     }
-
-
 
     public void exitGame() {
         if (stockfishAI != null) {
