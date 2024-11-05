@@ -36,7 +36,9 @@ public class StockfishAI {
                 e.printStackTrace();
             }
         }
-        ProcessBuilder processBuilder = new ProcessBuilder(rootPath + "/assets/stockfish/stockfish-windows-x86-64-avx2.exe");
+        
+        FileHandle stockfishHandle = Gdx.files.internal(rootPath + "/assets/stockfish/stockfish-windows-x86-64-avx2.exe");
+        ProcessBuilder processBuilder = new ProcessBuilder(stockfishHandle.file().getAbsolutePath());
         this.depth = depth;
         stockfishProcess = processBuilder.start();
         inputReader = new BufferedReader(new InputStreamReader(stockfishProcess.getInputStream()));
